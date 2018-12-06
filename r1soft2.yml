@@ -1,0 +1,133 @@
+---
+- name: R1soft agent installation on new servers
+  hosts: r1soft
+  connection: ssh
+  tasks:
+    - name: Create Repo file
+      when: ansible_os_family == "RedHat"
+      copy:
+        src: /etc/yum.repos.d/r1soft.repo
+        dest: /etc/yum.repos.d/r1soft.repo
+        owner: root
+        group: root
+
+
+    - name: Install agent
+      when: ansible_os_family == "RedHat"
+      package:
+        name: serverbackup-enterprise-agent
+        state: installed
+
+
+    - name: Get Key From Server
+      when: ansible_os_family == "RedHat"
+      command: "r1soft-setup --get-key http://206.189.196.105:8080/"
+
+
+
+    - name: Restart R1soft Agent
+      when: (ansible_distribution_major_version == "6")
+      service:
+        name: cdp-agent
+        state: restarted
+
+
+    - name: Restart R1soft Agent
+      when: (ansible_distribution_major_version == "7")
+      systemd:
+        name: sbm-agent
+        state: restarted
+
+#Fedora
+
+
+    - name: Create Repo file
+      when: ansible_os_family == "Fedora"
+      copy:
+        src: /etc/yum.repos.d/r1soft.repo
+        dest: /etc/yum.repos.d/r1soft.repo
+        owner: root
+        group: root
+
+    - name: Install agent
+      when: ansible_os_family == "Fedora"
+      package:
+        name: serverbackup-enterprise-agent
+        state: installed
+
+
+    - name: Get Key From Server
+      when: ansible_os_family == "Fedora"
+      command: "r1soft-setup --get-key http://206.189.196.105:8080/"
+
+
+    - name: Restart R1soft Agent
+      when: ansible_os_family == "Fedora"
+      service:
+        name: cdp-agent
+        state: restarted
+
+#Debian and Ubuntu       
+
+    - name: Install r1soft on Debian
+      when: ansible_distribution == "Debian"
+      command: "echo deb http://repo.r1soft.com/apt stable main >> /etc/apt/sources.list"
+
+
+    - name: Next command
+      when: ansible_distribution == "Debian"
+      uri:
+        url: "wget http://repo.r1soft.com/r1soft.asc/"
+
+
+    - name: Next command
+      when: ansible_distribution == "Debian"
+      command: "apt-key add r1soft.asc"
+
+
+    - name: Next command
+      when: ansible_distribution == "Debian"
+      command: "apt-get update "
+
+
+    - name: Install agent
+      when: ansible_distribution == "Debian"
+      package:
+        name: "serverbackup-enterprise-agent"
+        state: installed
+
+
+    - name: Get Key From Server
+      command: "r1soft-setup --get-key http://206.189.196.105:8080/"
+
+
+    - name: Install r1soft on Ubuntu
+      when: ansible_distribution == "Ubuntu"
+      command: "echo deb http://repo.r1soft.com/apt stable main >> /etc/apt/sources.list"
+
+
+    - name: Next command
+      when: ansible_distribution == "Ubuntu"
+      uri:
+        url: "wget http://repo.r1soft.com/r1soft.asc"
+
+
+    - name: Next command
+      when: ansible_distribution == "Ubuntu"
+      command: "apt-key add r1soft.asc"
+
+
+    - name: Next command
+      when: ansible_distribution == "Ubuntu"
+      command: "apt-get update"
+
+
+    - name: Install agent
+      when: ansible_distribution == "Ubuntu"
+      package:
+        name: "apt-get install serverbackup-enterprise --force"
+        state: installed
+
+
+    - name: Get Key From Server
+      command: "r1soft-setup --get-key http://206.189.196.105:8080"
